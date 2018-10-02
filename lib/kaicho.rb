@@ -37,11 +37,13 @@ module Kaicho
     true
   end
 
-  # builds an attr_reader for a resource which functions just like a typical
-  # attr_reader but will update the resource if it hasn't been accessed
-  # before.
+  # defines an attr_reader singleton method for a resource which functions just
+  # like a typical attr_reader but will update the resource if it hasn't been
+  # accessed before.  Unlike an attr_writer, an attr_reader can only be defined
+  # for resources that have been previously defined using {#def_resource}.
   #
-  # @param dname the resource that will be accessed
+  # @param dname the resource that will be accessed, as well as the name of the
+  #   singleton method.
   # @param share the owner of the shared variable
   # @return [True] this method always returns true or raises an exception
   def attr_reader(dname, share: nil)
@@ -58,16 +60,16 @@ module Kaicho
     true
   end
 
-  # builds an attr_writer for a resource which functions just like a typical
-  # attr_writer but will update the resource's dependants when it is called.
+  # defines an attr_writer singleton method for a resource which functions just
+  # like a typical attr_writer but will update the resource's dependants when
+  # it is called.  Unlike an attr_reader, the resource +dname+ need not be
+  # previously defined using {#def_resource}.
   #
-  # @param dname the resource that will be accessed
+  # @param dname the resource that will be accessed.  The name of the singleton
+  #   method defined will be +"#{dname}="+.
   # @param share the owner of the shared variable
   # @return [True] this method always returns true or raises an exception
   def attr_writer(dname, share: nil)
-    @resources ||= {}
-    raise ArgumentError.new("resource #{dname} has not been defined") unless @resource.key?(dname)
-
     write = share.nil? ? -> (v) { instance_variable_set(:"@#{dname}", v) }
                        : -> (v) { share.class_variable_set(:"@@#{dname}", v) }
     define_singleton_method(:"#{dname}=") do |v|
