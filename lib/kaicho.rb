@@ -98,7 +98,13 @@ module Kaicho
   #                where update_action is the action that
   #                is taken when this resource is updated.
   #                update_action can be one of
-  #                :
+  #                - :update - update the dependant before updating this resource
+  #                - :keep   - keep the dependant if it is already defined,
+  #                            otherwise, update it
+  #                - :fail   - don't try to update this resource if the
+  #                            dependant is not defined
+  #
+  #                -
   def def_resource(dname,
                    depends:   {},
                    triggers:  [],
