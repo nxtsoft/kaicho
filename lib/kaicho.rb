@@ -183,6 +183,8 @@ module Kaicho
     @resources[dname][:udid] = udid
 
     update_dependants(dname, udid)
+
+    true
   end
 
   def update_requisites(dname, udid=nil)
@@ -197,27 +199,32 @@ module Kaicho
         unless resource_defined?(d)
           return false
         end
-      else
-        raise "option #{o} not understood for #{d} while updating #{dname}"
       end
-      true
     end
+
+    true
   end
 
   def update_dependants(dname, udid=nil)
     udid ||= rand
     dependants = @resources.select { |_,v| v[:depends].include?(dname) && v[:udid] != udid }
     dependants.each { |d,_| update_resource(d, udid) }
+
+    true
   end
 
   def trigger_resources(trigger)
     udid = rand
     res = @resources.select { |_,v| v[:triggers].include?(trigger) }
     res.each { |r,_| update_resource(r, udid) }
+
+    true
   end
 
   def update_all_resources
     udid = rand
     @resources.keys.each { |d| update_resource(d, udid) }
+
+    true
   end
 end
