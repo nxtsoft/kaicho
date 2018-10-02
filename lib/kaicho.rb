@@ -129,8 +129,6 @@ module Kaicho
         { depends => :keep }
       end
 
-    Zashoku.log.warn(self) { "overwriting resource #{dname}" } if @resources.key?(dname)
-    Zashoku.log.info(self) { "defining resource #{dname}" }
     @resources.merge!(
       dname => {
         depends:  depends,
@@ -165,11 +163,7 @@ module Kaicho
   def update_resource(dname, udid=nil)
     raise "no such resource #{dname}" unless @resources.key?(dname)
 
-    Zashoku.log.debug(self) { "not updating #{dname}" } if @resources[dname][:udid] == udid
-
     return if @resources[dname][:udid] == udid
-
-    Zashoku.log.debug(self) { "updating resource #{dname} #{udid}" }
 
     udid ||= rand
 
@@ -212,7 +206,6 @@ module Kaicho
 
   def update_dependants(dname, udid=nil)
     udid ||= rand
-    Zashoku.log.debug(self) { "updating dependants for #{dname}" }
     dependants = @resources.select { |_,v| v[:depends].include?(dname) && v[:udid] != udid }
     dependants.each { |d,_| update_resource(d, udid) }
   end
