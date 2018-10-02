@@ -164,7 +164,7 @@ module Kaicho
   end
 
   def update_resource(dname, udid=nil)
-    raise "no such resource #{dname}" unless @resources.key?(dname)
+    raise ArgumentError.new("no such resource #{dname}") unless @resources.key?(dname)
 
     return if @resources[dname][:udid] == udid
 
