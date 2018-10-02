@@ -198,11 +198,8 @@ module Kaicho
         update_resource(d, udid) unless resource_defined?(d)
       when :fail
         unless resource_defined?(d)
-          Zashoku.log.debug(self) { "update resource #{dname} failing on #{d}" }
           return false
         end
-      when :force
-        update_resource(d, udid)
       else
         raise "option #{o} not understood for #{d} while updating #{dname}"
       end
