@@ -1,57 +1,40 @@
-require "kaicho/version"
+require 'kaicho/version'
+require 'kaicho/util'
 
-# Kaicho is a module that assists in a class's resource management.
-# It enables you to chain resources together.  Each resource when changed
-# will update all of its dependants.  Additionally, if you try to access a
-# resource which has not been initialized, it will update itself along with
-# all resources it depends on.
+# Kaicho is a module for instance variable management.  It can also manage class
+# variables, both are referred to as ``resources.''  All class and instance
+# variables are automatically considered resources, but only those which have
+# been defined with {#def_resource} have the ability to be automatically
+# updated.
 #
-# This is useful if you have a class with many instance variables that all
-# form a dependancy tree.  For instance:
+# Auto-updates occur whenever a resource is updated through {#update_resource}
+# or if a resource has never been initialized and is accessed through a kaicho
+# #{attr_reader}.
 #
-# ```
-# class Fruits
-#   include Kaicho
-#
-#   def intialize
-#     def_resource :apples, accessor: :both { @apples || 0 }
-#     def_resource :oranges, accessor: :both { @oranges || 0 }
-#     def_resource :total, depend: { apples: :fail, oranges: :fail } do
-#       puts "computing total"
-#       @apples + @oranges
-#     end
-#   end
-# end
-#
-# f = Fruits.new
-# f.apples         #=> 0
-# f.apples += 1    #=> 1
-# computing total
-# f.oranges = 10   #=> 10
-# computing total
-# f.total          #=> 11
-# f.oranges = 2
-# computing total
-# f.total          #=> 13
-# f.total          #=> 13
-# ```
+# Note that all methods act on instances of Classes at the moment.
 module Kaicho
   # adds trigger(s) which can be used to trigger updates of resources
   # who have the trigger set
   #
-  # @param t a list of symbols to be used as triggers
+  # @param [[Symbol]] t a list of symbols to be used as triggers
+  # @return [True] this method always returns true or raises an exception
   def add_triggers(*t)
     @triggers ||= []
     @triggers += t.map(&:to_sym)
+
+    true
   end
 
-  # makes both an attr_reader and an attr_writer for the `dname`
+  # makes both an attr_reader and an attr_writer for the +dname+
   #
   # @param dname the resource to create accessors for
   # @param share the owner of the shared variable
+  # @return [True] this method always returns true or raises an exception
   def attr_accessor(dname, share: nil)
     attr_reader(dname, share: nil)
     attr_writer(dname, share: nil)
+
+    true
   end
 
   # builds an attr_reader for a resource which functions just like a typical
