@@ -31,8 +31,8 @@ module Kaicho
   # @param share the owner of the shared variable
   # @return [True] this method always returns true or raises an exception
   def attr_accessor(dname, share: nil)
-    attr_reader(dname, share: nil)
-    attr_writer(dname, share: nil)
+    attr_reader(dname, share: share)
+    attr_writer(dname, share: share)
 
     true
   end
