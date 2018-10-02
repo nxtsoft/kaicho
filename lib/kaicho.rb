@@ -111,33 +111,27 @@ module Kaicho
                    &block)
     @resources ||= {}
 
-    check_type(Symbol, dname)
-    check_type(Hash, depends)
-    check_type(Array, triggers)
+    Kaicho::Util::check_type(Symbol, dname)
+    Kaicho::Util::check_type(Hash, depends)
+    Kaicho::Util::check_type(Array, triggers)
 
-    return if @resources.key?(dname) && !overwrite
+    unless %i[read, r, write, w, both, rw, none].include?(accessor)
+      raise ArgumentError.new("invalid accessor: :#{accessor}")
+    end
 
     add_triggers # initialize @triggers to []
     triggers.each do |t|
-      raise ArgumentError.new("invalid trigger ':#{t}'") unless @triggers.include?(t)
+      raise ArgumentError.new("invalid trigger :#{t}") unless @triggers.include?(t)
     end
 
-    depends.map =
-      case depends
-      when Array
-        depends.map { |d| [d, :keep] }.to_h
-      when Hash
-        depends
-      else
-        { depends => :keep }
-      end
+    return if @resources.key?(dname) && !overwrite
 
     @resources.merge!(
       dname => {
         depends:  depends,
         proc:     block,
         udid:     -1,
-        triggers: triggers & (@triggers || []),
+        triggers: triggers,
         share:    share,
         varname:  share.nil? ? "@#{dname}" : "@@#{dname}"
       }
