@@ -75,29 +75,33 @@ module Kaicho
       update_dependants(dname)
       v
     end
+
+    true
   end
 
-  def check_type(expected, got)
-    unless expected === got
-      raise TypeError.new("expected #{expected.name} got #{got}:#{got.class.name}")
-    end
-  end
-
-  # define a resource
+  # Define a resource
   #
-  # @param dname the name of the resource
-  # @param depends a hash of dependants with the format
-  #                { dependant_name: :update_action }
-  #                where update_action is the action that
-  #                is taken when this resource is updated.
-  #                update_action can be one of
-  #                - :update - update the dependant before updating this resource
-  #                - :keep   - keep the dependant if it is already defined,
-  #                            otherwise, update it
-  #                - :fail   - don't try to update this resource if the
-  #                            dependant is not defined
-  #
-  #                -
+  # @param [Symbol] dname the name of the resource
+  # @param [Hash] depends a hash of dependants with the format
+  #   +{ dependant_name: :update_action }+ where update_action is the action that
+  #   is taken when this resource is updated.  Update_action can be one of:
+  #   - +:update+ - update the dependant before updating this resource
+  #   - +:keep+   - keep the dependant if it is already defined, otherwise, update it
+  #   - +:fail+   - don't try to update this resource if the dependant is not defined
+  # @param [Array] triggers a list of triggers.  These triggers must have been
+  #   previously defined using @see #add_triggers
+  # @param [Boolean] overwrite if a resource with this name already exists, should it be overwritten
+  # @param [Object, nil] share if +nil+, this resource is stored as an instance variable, else
+  #   the value must be an instance of a class and this resource is stored as a
+  #   class variable owned by the class specified.
+  # @param [Symbol] accessor a symbol that determines which attribute accessors should be
+  #   generated for this resource
+  #   - +:read+,  +:r+  - @see #attr_reader
+  #   - +:write+, +:w+  - @see #attr_writer
+  #   - +:both+,  +:rw+ - @see #attr_accessor
+  #   - +:none+         - don't generate any accessors
+  # @param block a block that will be called, with no arguments, to update this resource
+  # @return [True] this method always returns true or raises an exception
   def def_resource(dname,
                    depends:   {},
                    triggers:  [],
