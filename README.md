@@ -1,6 +1,7 @@
 # Kaicho
 [![Build Status](https://travis-ci.org/annacrombie/kaicho.svg?branch=master)](https://travis-ci.org/annacrombie/kaicho)
 [![Inline docs](http://inch-ci.org/github/annacrombie/kaicho.svg?branch=master&style=shields)](http://inch-ci.org/github/annacrombie/kaicho)
+[![Coverage Status](https://coveralls.io/repos/github/annacrombie/kaicho/badge.svg?branch=master)](https://coveralls.io/github/annacrombie/kaicho?branch=master)
 
 Kaicho is the boss for your resources.  It handles keeping everything up to
 date.
