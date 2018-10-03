@@ -117,7 +117,7 @@ module Kaicho
     Kaicho::Util::check_type(Hash, depends)
     Kaicho::Util::check_type(Array, triggers)
 
-    unless %i[read, r, write, w, both, rw, none].include?(accessor)
+    unless %i[read r write w both rw none].include?(accessor)
       raise(ArgumentError, "invalid accessor: :#{accessor}")
     end
 
