@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Kaicho
   # A utility module for Kaicho.  Don't touch this stuff!
   module Util
