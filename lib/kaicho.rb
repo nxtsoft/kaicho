@@ -48,7 +48,7 @@ module Kaicho
   # @return [True] this method always returns true or raises an exception
   def attr_reader(dname, share: nil)
     @resources ||= {}
-    raise ArgumentError.new("resource #{dname} has not been defined") unless @resource.key?(dname)
+    raise(ArgumentError, "resource #{dname} has not been defined") unless @resource.key?(dname)
 
     read = share.nil? ? -> { instance_variable_get(:"@#{dname}") }
                       : -> { share.class_variable_get(:"@@#{dname}") }
@@ -118,12 +118,12 @@ module Kaicho
     Kaicho::Util::check_type(Array, triggers)
 
     unless %i[read, r, write, w, both, rw, none].include?(accessor)
-      raise ArgumentError.new("invalid accessor: :#{accessor}")
+      raise(ArgumentError, "invalid accessor: :#{accessor}")
     end
 
     add_triggers # initialize @triggers to []
     triggers.each do |t|
-      raise ArgumentError.new("invalid trigger :#{t}") unless @triggers.include?(t)
+      raise(ArgumentError, "invalid trigger :#{t}") unless @triggers.include?(t)
     end
 
     return if @resources.key?(dname) && !overwrite
@@ -166,7 +166,7 @@ module Kaicho
   end
 
   def update_resource(dname, udid=nil)
-    raise ArgumentError.new("no such resource #{dname}") unless @resources.key?(dname)
+    raise(ArgumentError, "no such resource #{dname}") unless @resources.key?(dname)
 
     return if @resources[dname][:udid] == udid
 
