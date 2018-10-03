@@ -52,7 +52,7 @@ module Kaicho
   def attr_reader(dname, share: nil)
     @resources ||= {}
 
-    unless @resource.key?(dname)
+    unless @resources.key?(dname)
       raise(ArgumentError, "resource #{dname} has not been defined")
     end
 
