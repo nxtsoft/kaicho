@@ -128,16 +128,14 @@ module Kaicho
 
     return if @resources.key?(dname) && !overwrite
 
-    @resources.merge!(
-      dname => {
-        depends:  depends,
-        proc:     block,
-        udid:     -1,
-        triggers: triggers,
-        share:    share,
-        varname:  share.nil? ? "@#{dname}" : "@@#{dname}"
-      }
-    )
+    @resources[dname] = {
+      depends:  depends,
+      proc:     block,
+      udid:     -1,
+      triggers: triggers,
+      share:    share,
+      varname:  share.nil? ? "@#{dname}" : "@@#{dname}"
+    }
 
     case accessor
     when :read,  :r
