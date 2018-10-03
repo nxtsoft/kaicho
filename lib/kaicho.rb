@@ -1,11 +1,11 @@
 require 'kaicho/version'
 require 'kaicho/util'
 
-# Kaicho is a module for instance variable management.  It can also manage class
-# variables, both are referred to as ``resources.''  All class and instance
-# variables are automatically considered resources, but only those which have
-# been defined with {#def_resource} have the ability to be automatically
-# updated.
+# Kaicho is a module for instance variable management.  It can also manage
+# class variables, both are referred to as ``resources.''  All class and
+# instance variables are automatically considered resources, but only those
+# which have been defined with {#def_resource} have the ability to be
+# automatically updated.
 #
 # Auto-updates occur whenever a resource is updated through {#update_resource}
 # or if a resource has never been initialized and is accessed through a kaicho
@@ -18,9 +18,9 @@ module Kaicho
   #
   # @param [[Symbol]] t a list of symbols to be used as triggers
   # @return [True] this method always returns true or raises an exception
-  def add_triggers(*t)
+  def add_triggers(*trigs)
     @triggers ||= []
-    @triggers += t.map(&:to_sym)
+    @triggers += trigs.map(&:to_sym)
 
     true
   end
@@ -44,11 +44,14 @@ module Kaicho
   #
   # @param dname the resource that will be accessed, as well as the name of the
   #   singleton method.
+  #
   # @param share the owner of the shared variable
   # @return [True] this method always returns true or raises an exception
   def attr_reader(dname, share: nil)
     @resources ||= {}
-    raise(ArgumentError, "resource #{dname} has not been defined") unless @resource.key?(dname)
+    unless @resource.key?(dname)
+      raise(ArgumentError, "resource #{dname} has not been defined")
+    end
 
     read = share.nil? ? -> { instance_variable_get(:"@#{dname}") }
                       : -> { share.class_variable_get(:"@@#{dname}") }
@@ -70,8 +73,8 @@ module Kaicho
   # @param share the owner of the shared variable
   # @return [True] this method always returns true or raises an exception
   def attr_writer(dname, share: nil)
-    write = share.nil? ? -> (v) { instance_variable_set(:"@#{dname}", v) }
-                       : -> (v) { share.class_variable_set(:"@@#{dname}", v) }
+    write = share.nil? ? ->(v) { instance_variable_set(:"@#{dname}", v) }
+                       : ->(v) { share.class_variable_set(:"@@#{dname}", v) }
     define_singleton_method(:"#{dname}=") do |v|
       write.call(v)
       update_dependants(dname)
@@ -85,24 +88,28 @@ module Kaicho
   #
   # @param [Symbol] dname the name of the resource
   # @param [Hash] depends a hash of dependants with the format
-  #   +{ dependant_name: :update_action }+ where update_action is the action that
-  #   is taken when this resource is updated.  Update_action can be one of:
+  #   +{ dependant_name: :update_action }+ where update_action is the action
+  #   that is taken when this resource is updated.  Update_action can be one of:
   #   - +:update+ - update the dependant before updating this resource
-  #   - +:keep+   - keep the dependant if it is already defined, otherwise, update it
-  #   - +:fail+   - don't try to update this resource if the dependant is not defined
+  #   - +:keep+   - keep the dependant if it is already defined, otherwise,
+  #     update it
+  #   - +:fail+   - don't try to update this resource if the dependant is not
+  #     defined
   # @param [Array] triggers a list of triggers.  These triggers must have been
   #   previously defined using @see #add_triggers
-  # @param [Boolean] overwrite if a resource with this name already exists, should it be overwritten
-  # @param [Object, nil] share if +nil+, this resource is stored as an instance variable, else
-  #   the value must be an instance of a class and this resource is stored as a
-  #   class variable owned by the class specified.
-  # @param [Symbol] accessor a symbol that determines which attribute accessors should be
-  #   generated for this resource
+  # @param [Boolean] overwrite if a resource with this name already exists,
+  #   should it be overwritten
+  # @param [Object, nil] share if +nil+, this resource is stored as an instance
+  #   variable, else the value must be an instance of a class and this resource
+  #   is stored as a class variable owned by the class specified.
+  # @param [Symbol] accessor a symbol that determines which attribute accessors
+  #   should be generated for this resource
   #   - +:read+,  +:r+  - @see #attr_reader
   #   - +:write+, +:w+  - @see #attr_writer
   #   - +:both+,  +:rw+ - @see #attr_accessor
   #   - +:none+         - don't generate any accessors
-  # @param block a block that will be called, with no arguments, to update this resource
+  # @param block a block that will be called, with no arguments, to update this
+  #   resource
   # @return [True] this method always returns true or raises an exception
   def def_resource(dname,
                    depends:   {},
@@ -159,12 +166,16 @@ module Kaicho
     if @resources[dname][:share].nil?
       instance_variable_defined?(@resources[dname][:varname])
     else
-      @resources[dname][:share].class_variable_defined?(@resources[dname][:varname])
+      @resources[dname][:share].class_variable_defined?(
+        @resources[dname][:varname]
+      )
     end
   end
 
-  def update_resource(dname, udid=nil)
-    raise(ArgumentError, "no such resource #{dname}") unless @resources.key?(dname)
+  def update_resource(dname, udid = nil)
+    unless @resources.key?(dname)
+      raise(ArgumentError, "no such resource #{dname}")
+    end
 
     return if @resources[dname][:udid] == udid
 
@@ -177,7 +188,9 @@ module Kaicho
     if @resources[dname][:share].nil?
       instance_variable_set(@resources[dname][:varname], result)
     else
-      @resources[dname][:share].class_variable_set(@resources[dname][:varname], result)
+      @resources[dname][:share].class_variable_set(
+        @resources[dname][:varname], result
+      )
     end
 
     @resources[dname][:udid] = udid
@@ -187,7 +200,7 @@ module Kaicho
     true
   end
 
-  def update_requisites(dname, udid=nil)
+  def update_requisites(dname, udid = nil)
     udid ||= rand
     @resources[dname][:depends].each do |d, o|
       case o
@@ -205,18 +218,20 @@ module Kaicho
     true
   end
 
-  def update_dependants(dname, udid=nil)
+  def update_dependants(dname, udid = nil)
     udid ||= rand
-    dependants = @resources.select { |_,v| v[:depends].include?(dname) && v[:udid] != udid }
-    dependants.each { |d,_| update_resource(d, udid) }
+    dependants = @resources.select do |_, v|
+      v[:depends].include?(dname) && v[:udid] != udid
+    end
+    dependants.each { |d, _| update_resource(d, udid) }
 
     true
   end
 
   def trigger_resources(trigger)
     udid = rand
-    res = @resources.select { |_,v| v[:triggers].include?(trigger) }
-    res.each { |r,_| update_resource(r, udid) }
+    res = @resources.select { |_, v| v[:triggers].include?(trigger) }
+    res.each { |r, _| update_resource(r, udid) }
 
     true
   end
