@@ -49,12 +49,18 @@ module Kaicho
   # @return [True] this method always returns true or raises an exception
   def attr_reader(dname, share: nil)
     @resources ||= {}
+
     unless @resource.key?(dname)
       raise(ArgumentError, "resource #{dname} has not been defined")
     end
 
-    read = share.nil? ? -> { instance_variable_get(:"@#{dname}") }
-                      : -> { share.class_variable_get(:"@@#{dname}") }
+    read =
+      if share.nil?
+        -> { instance_variable_get(:"@#{dname}") }
+      else
+        -> { share.class_variable_get(:"@@#{dname}") }
+      end
+
     define_singleton_method(dname) do
       update_resource(dname) unless @resources[dname][:udid].positive?
       read.call
@@ -73,8 +79,13 @@ module Kaicho
   # @param share the owner of the shared variable
   # @return [True] this method always returns true or raises an exception
   def attr_writer(dname, share: nil)
-    write = share.nil? ? ->(v) { instance_variable_set(:"@#{dname}", v) }
-                       : ->(v) { share.class_variable_set(:"@@#{dname}", v) }
+    write =
+      if share.nil?
+        ->(v) { instance_variable_set(:"@#{dname}", v) }
+      else
+        ->(v) { share.class_variable_set(:"@@#{dname}", v) }
+      end
+
     define_singleton_method(:"#{dname}=") do |v|
       write.call(v)
       update_dependants(dname)
