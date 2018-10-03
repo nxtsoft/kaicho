@@ -12,7 +12,10 @@ module Kaicho
     # @return [True] this method always returns true or raises an exception
     def check_type(expected, got)
       unless expected === got
-        raise(TypeError, "expected #{expected.name} got #{got}:#{got.class.name}")
+        raise(
+          TypeError,
+          "expected #{expected.name} got #{got}:#{got.class.name}"
+        )
       end
 
       true
