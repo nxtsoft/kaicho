@@ -1,4 +1,5 @@
 # Kaicho
+[![Build Status](https://travis-ci.org/annacrombie/kaicho.svg?branch=master)](https://travis-ci.org/annacrombie/kaicho)
 
 Kaicho is the boss for your resources.  It handles keeping everything up to
 date.
