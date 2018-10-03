@@ -18,7 +18,7 @@ module Kaicho
   # adds trigger(s) which can be used to trigger updates of resources
   # who have the trigger set
   #
-  # @param [[Symbol]] t a list of symbols to be used as triggers
+  # @param [[Symbol]] trigs a list of symbols to be used as triggers
   # @return [True] this method always returns true or raises an exception
   def add_triggers(*trigs)
     @triggers ||= []
@@ -169,9 +169,14 @@ module Kaicho
     true
   end
 
-  # Determine if a resource has been defined
+  # Determine if the value for resource has been defined.  In other words,
+  # determine if a resource has ever been updated.
   #
-  # @param [Symbol] dname
+  # If this resource has been defined using {#def_resource} then check if an
+  # associated instance or class variable is defined.  Otherwise this method is
+  # eqivalent to calling +instance_variable_defined?("@#{dname}")+.
+  #
+  # @param [Symbol] dname the name of the resource
   # @return [True] this method always returns true or raises an exception
   def resource_defined?(dname)
     return instance_variable_defined?("@#{dname}") unless @resources.key?(dname)
@@ -185,6 +190,18 @@ module Kaicho
     end
   end
 
+  # Update a resource
+  #
+  # This method will update the specified resource and all of its depends
+  # and dependants.
+  #
+  # @see #update_depends
+  # @see #update_dependants
+  #
+  # @param dname the name of the resource
+  # @param udid the update-id of this call, this should be left +nil+.  It is
+  #   internally to avoid infinite loops during update cascades.
+  # @return [True] this method always returns true or raises an exception
   def update_resource(dname, udid = nil)
     unless @resources.key?(dname)
       raise(ArgumentError, "no such resource #{dname}")
@@ -194,7 +211,7 @@ module Kaicho
 
     udid ||= rand
 
-    return unless update_requisites(dname, udid)
+    return unless update_depends(dname, udid)
 
     result = @resources[dname][:proc].call
 
@@ -213,7 +230,15 @@ module Kaicho
     true
   end
 
-  def update_requisites(dname, udid = nil)
+  # Update the prerequisites of a resource.
+  #
+  # This method will update all resources that +dname+ depends on.
+  #
+  # @param dname the name of the resource
+  # @param udid the update-id of this call, this should be left +nil+.  It is
+  #   internally to avoid infinite loops during update cascades.
+  # @return [True] this method always returns true or raises an exception
+  def update_depends(dname, udid = nil)
     udid ||= rand
     @resources[dname][:depends].each do |d, o|
       case o
@@ -229,6 +254,15 @@ module Kaicho
     true
   end
 
+  # Update the dependants of +dname+
+  #
+  # This method will update all resources that have +dname+ in their list of
+  # depends.
+  #
+  # @param dname the name of the resource
+  # @param udid the update-id of this call, this should be left +nil+.  It is
+  #   internally to avoid infinite loops during update cascades.
+  # @return [True] this method always returns true or raises an exception
   def update_dependants(dname, udid = nil)
     udid ||= rand
     dependants = @resources.select do |_, v|
@@ -239,6 +273,13 @@ module Kaicho
     true
   end
 
+  # Trigger resource updates
+  #
+  # This method will update all resources that have +trigger+ in their list of
+  # triggers.
+  #
+  # @param [Symbol] trigger the name of the trigger to trigger
+  # @return [True] this method always returns true or raises an exception
   def trigger_resources(trigger)
     udid = rand
     res = @resources.select { |_, v| v[:triggers].include?(trigger) }
@@ -247,6 +288,11 @@ module Kaicho
     true
   end
 
+  # Update all resources
+  #
+  # Equivalent to calling {#update_resource} for each resource in +@resources+.
+  #
+  # @return [True] this method always returns true or raises an exception
   def update_all_resources
     udid = rand
     @resources.keys.each { |d| update_resource(d, udid) }
