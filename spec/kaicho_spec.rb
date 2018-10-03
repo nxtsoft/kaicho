@@ -1,4 +1,6 @@
-class Fixture
+# frozen_string_literal: true
+
+class FruitBasket
   attr_reader :computations
 
   include Kaicho
@@ -17,8 +19,7 @@ end
 
 RSpec.describe Kaicho do
   context 'fruit example' do
-
-    f = Fixture.new
+    f = FruitBasket.new
 
     it 'has accessors' do
       expect(f).to respond_to :apples
