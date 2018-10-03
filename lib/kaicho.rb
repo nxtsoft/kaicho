@@ -220,9 +220,7 @@ module Kaicho
       when :keep
         update_resource(d, udid) unless resource_defined?(d)
       when :fail
-        unless resource_defined?(d)
-          return false
-        end
+        return false unless resource_defined?(d)
       end
     end
 
