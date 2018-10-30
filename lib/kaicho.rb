@@ -237,7 +237,7 @@ module Kaicho
   # @param dname the name of the resource
   # @param udid the update-id of this call, this should be left +nil+.  It is
   #   internally to avoid infinite loops during update cascades.
-  # @return [True] this method always returns true or raises an exception
+  # @return [bool] returns false if the resource could not be found, else return true
   def update_depends(dname, udid = nil)
     udid ||= rand
     @resources[dname][:depends].each do |d, o|
@@ -295,8 +295,23 @@ module Kaicho
   # @return [True] this method always returns true or raises an exception
   def update_all_resources
     udid = rand
-    @resources.keys.each { |d| update_resource(d, udid) }
+
+    resource_roots.each { |d| update_resource(d, udid) }
 
     true
+  end
+
+  # Determine the root resources of the current object
+  #
+  # A resource is a root resource if it either does not depend on anything or
+  # all of its dependencies have the +:fail+ action (i.e. they are not managed
+  # by kaicho)
+  #
+  # @return [Array] an array of Symbol where each element is the name of a
+  #   resource root
+  def resource_roots
+    @resources.select do |a, attr|
+      attr[:depends].empty? || attr[:depends].all? { |_,a| a == :fail }
+    end.map { |a, _| a  }
   end
 end
