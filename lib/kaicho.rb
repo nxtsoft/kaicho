@@ -93,7 +93,7 @@ module Kaicho
       end
 
     define_singleton_method(dname) do
-      update_resource(dname) unless @resources[dname][:udid].positive?
+      update_resource(dname, rand) unless resource_defined?(dname)
       read.call
     end
 
