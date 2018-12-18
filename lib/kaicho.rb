@@ -119,7 +119,7 @@ module Kaicho
 
     define_singleton_method(:"#{dname}=") do |v|
       write.call(v)
-      update_dependants(dname)
+      update_dependants(dname, rand)
       v
     end
 
