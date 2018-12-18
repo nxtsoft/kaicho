@@ -17,7 +17,8 @@ class FruitBasket
   end
 end
 
-RSpec.describe Kaicho do
+
+RSpec.describe FruitBasket do
   context 'fruit example' do
     f = FruitBasket.new
 
