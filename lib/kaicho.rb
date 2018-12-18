@@ -300,10 +300,9 @@ module Kaicho
   # @return [True] this method always returns true or raises an exception
   def update_dependants(dname, udid = nil)
     udid ||= rand
-    dependants = @resources.select do |_, v|
+    @resources.select do |_, v|
       v[:depends].include?(dname) && v[:udid] != udid
-    end
-    dependants.each { |d, _| update_resource(d, udid) }
+    end.each { |d, _| update_resource(d, udid) }
 
     true
   end
