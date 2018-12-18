@@ -15,6 +15,35 @@ require 'kaicho/util'
 #
 # Note that all methods act on instances of Classes at the moment.
 module Kaicho
+  # Called when Kaicho is `include`d
+  # if you use the provided class methods, be sure to call super in your
+  # initialize method, otherwise they will have no effect
+  def self.append_features(rcvr)
+    super
+
+    rcvr.instance_variable_set(:@class_resources, [])
+    rcvr.instance_variable_set(:@class_triggers, [])
+
+    # @see #def_resource
+    rcvr.define_singleton_method(:def_resource) do |*args, &block|
+      @class_resources << [args, block]
+    end
+
+    # @see #add_triggers
+    rcvr.define_singleton_method(:add_triggers) do |*triggers|
+      @triggers += triggers
+    end
+  end
+
+  def initialize
+    (self.class.instance_variable_get(:@class_resources))
+      .each { |args, block| def_resource(*args, &block) }
+
+    add_triggers(*(self.class.instance_variable_get(:@class_triggers)))
+
+    super
+  end
+
   # adds trigger(s) which can be used to trigger updates of resources
   # who have the trigger set
   #
