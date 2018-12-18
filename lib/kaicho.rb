@@ -243,22 +243,22 @@ module Kaicho
     end
 
     return if @resources[dname][:udid] == udid
-
     udid ||= rand
+    @resources[dname][:udid] = udid
 
     return unless update_depends(dname, udid)
 
-    result = @resources[dname][:proc].call
+    unless @resources[dname][:proc].nil?
+      result = self.instance_exec(&@resources[dname][:proc])
 
-    if @resources[dname][:share].nil?
-      instance_variable_set(@resources[dname][:varname], result)
-    else
-      @resources[dname][:share].class_variable_set(
-        @resources[dname][:varname], result
-      )
+      if @resources[dname][:share].nil?
+        instance_variable_set(@resources[dname][:varname], result)
+      else
+        @resources[dname][:share].class_variable_set(
+          @resources[dname][:varname], result
+        )
+      end
     end
-
-    @resources[dname][:udid] = udid
 
     update_dependants(dname, udid)
 
