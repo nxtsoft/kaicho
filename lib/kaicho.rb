@@ -150,6 +150,7 @@ module Kaicho
   #   - +:write+, +:w+  - defines an {#attr_writer}
   #   - +:both+,  +:rw+ - defines both, see {#attr_accessor}
   #   - +:none+         - don't generate any accessors
+  # @param [Symbol] accessors alias to accessor
   # @param block a block that will be called, with no arguments, to update this
   #   resource
   # @return [True] this method always returns true or raises an exception
@@ -157,14 +158,19 @@ module Kaicho
                    depends:   {},
                    triggers:  [],
                    overwrite: false,
-                   share:    nil,
-                   accessor: :read,
+                   share:     nil,
+                   accessor:  :read,
+                   accessors: nil,
                    &block)
     @resources ||= {}
+
+    accessor = accessors unless accessors.nil?
 
     Kaicho::Util.check_type(Symbol, dname)
     Kaicho::Util.check_type(Hash, depends)
     Kaicho::Util.check_type(Array, triggers)
+
+    block = nil unless block_given?
 
     unless %i[read r write w both rw none].include?(accessor)
       raise(ArgumentError, "invalid accessor: :#{accessor}")
