@@ -294,6 +294,8 @@ module Kaicho
         update_resource(d, udid) unless resource_defined?(d)
       when :fail
         return false unless resource_defined?(d)
+      when Proc
+        update_resource(d, udid) if o.call
       end
     end
 
