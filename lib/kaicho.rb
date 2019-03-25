@@ -117,7 +117,18 @@ module Kaicho
         ->(v) { share.class_variable_set(:"@@#{dname}", v) }
       end
 
+    read =
+      if share.nil?
+        -> { instance_variable_get(:"@#{dname}") }
+      else
+        -> { share.class_variable_get(:"@@#{dname}") }
+      end
+
     define_singleton_method(:"#{dname}=") do |v|
+      if resource_defined?(dname) && read.call == v
+        return v
+      end
+
       write.call(v)
       update_dependants(dname, rand)
       v
