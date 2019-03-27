@@ -2,5 +2,5 @@
 
 module Kaicho
   # Version of Kaicho
-  VERSION = '0.3.0'
+  VERSION = '0.3.1'
 end
