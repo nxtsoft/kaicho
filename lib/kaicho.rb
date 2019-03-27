@@ -93,6 +93,7 @@ module Kaicho
       end
 
     define_singleton_method(dname) do
+      update_depends(dname)
       update_resource(dname, rand) unless resource_defined?(dname)
       read.call
     end
@@ -294,7 +295,8 @@ module Kaicho
         update_resource(d, udid) unless resource_defined?(d)
       when :fail
         return false unless resource_defined?(d)
-      when Proc
+      when Proc, UnboundMethod, Method
+        o = o.bind(self) if o.is_a?(UnboundMethod)
         update_resource(d, udid) if o.call
       end
     end
