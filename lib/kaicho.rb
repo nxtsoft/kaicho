@@ -36,8 +36,29 @@ module Kaicho
   end
 
   def initialize
-    (self.class.instance_variable_get(:@class_resources))
-      .each { |args, block| def_resource(*args, &block) }
+
+    class_resources_args = {}
+    #(self.class.instance_variable_get(:@class_resources))
+    #  .each { |args, block| def_resource(*args, &block) }
+
+    (self.class.instance_variable_get(:@class_resources)).each_with_index do |args, index, block|
+      class_resources_args[index] = args
+    end
+    
+    class_resources_args.keys.each do |key|
+      kwargs = {}
+
+      keywords = class_resources_args[key][0]
+      dname = keywords.first
+      block = class_resources_args[key][1]
+      keywords.each_with_index do |kw, index|
+        if index >= 1
+          kwargs.merge!(kw) unless kw.nil?
+        end
+      end
+      
+      def_resource(dname, **kwargs, &block)
+    end
 
     add_triggers(*(self.class.instance_variable_get(:@class_triggers)))
 
@@ -167,15 +188,18 @@ module Kaicho
   #   resource
   # @return [True] this method always returns true or raises an exception
   def def_resource(dname,
-                   depends:   {},
-                   triggers:  [],
-                   overwrite: false,
-                   share:     nil,
-                   accessor:  :read,
-                   accessors: nil,
-                   &block)
+                  **kwargs,
+                  &block)
     @resources ||= {}
 
+    depends, triggers, overwrite, share, accessor, accessors = nil
+    kwargs[:depends].nil? ? depends = {} : depends = kwargs[:depends]
+    kwargs[:triggers].nil? ? triggers = [] : triggers = kwargs[:triggers]
+    kwargs[:overwrite].nil? ? overwrite = false : overwrite = kwargs[:overwrite]
+    kwargs[:share].nil? ? share = nil : share = kwargs[:share]
+    kwargs[:accessor].nil? ? accessor = :read : accessor = kwargs[:accessor]
+    kwargs[:accessors].nil? ? accessors = nil : accessors = kwargs[:accessors]
+    
     accessor = accessors unless accessors.nil?
 
     Kaicho::Util.check_type(Symbol, dname)
