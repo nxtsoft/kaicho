@@ -10,6 +10,7 @@ class FruitFarm
     super
   end
 
+
   def_resource :apple_trees, accessors: :both
   def_resource :orange_trees, accessors: :both
 
